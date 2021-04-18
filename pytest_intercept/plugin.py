@@ -70,10 +70,11 @@ def intercept_teardown(pytestconfig):
     yield None
     if pytestconfig.getoption("intercept"):
         intercept_file = pytestconfig.getoption("intercept")
-        _urls = {'urllib': pytest._urllib_urls,
-                 'requests': pytest._requests_urls,
-                 'socket': pytest._sockets_ip,
-                 }
+        _urls = {
+            'urllib': pytest._urllib_urls,
+            'requests': pytest._requests_urls,
+            'socket': pytest._sockets_ip,
+            }
         with open(intercept_file, "w") as fd:
             json.dump(_urls, fd)
             print("Dumped!")
