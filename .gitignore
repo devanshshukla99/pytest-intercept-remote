@@ -55,5 +55,5 @@ htmlcov
 # PyCharm
 .idea
 
-pytest_remotedata/version.py
+pytest_intercept/_version.py
 pip-wheel-metadata/
