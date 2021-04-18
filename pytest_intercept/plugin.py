@@ -10,6 +10,10 @@ def pytest_addoption(parser):
                      metavar='Intercept output file', default=None,
                      help="intercepts outgoing connections and dumps it to a file."
                      )
+    parser.addoption("--intercepted-file", action="store", nargs="?", type=str,
+                     metavar='Intercept output file', default=None,
+                     help="Supply intercepted file-name to any test function."
+                     )
 
 
 def pytest_configure(config):
@@ -18,6 +22,9 @@ def pytest_configure(config):
     pytest._sockets_ip = []
     config.getini('markers').append(
         'intercept: Intercept')
+    config.getini('markers').append(
+        'intercepted_file: Supply intercepted file-name to any test function.')
+    pytest._intercepted_file = config.getoption('--intercepted-file')
 
 
 @pytest.fixture(scope='session')

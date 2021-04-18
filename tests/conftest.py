@@ -1,1 +1,1 @@
-pytest_plugins = ['pytester', 'pytest_intercept.plugin']
+pytest_plugins = ['pytester']

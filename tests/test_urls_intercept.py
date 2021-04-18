@@ -9,3 +9,6 @@ def test_requests_urls():
 def test_urllib_urls():
     u = urlopen("http://www.google.com")
     assert u.status == 200
+
+def test_fname():
+    assert pytest._intercepted_file == None
