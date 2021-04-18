@@ -26,7 +26,7 @@ This plugin allows use of ``--intercept=[Intercept output/dump file]`` as a comm
 
     $ pytest --intercept=urls.json
 
-The tests will **fail** with ``Runtime Exception``.
+The tests trying to connect to internet will **fail** with ``Runtime Exception``.
 
 
 .. Licence
