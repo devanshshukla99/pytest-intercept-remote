@@ -27,6 +27,15 @@ def pytest_configure(config):
         print("Intercept outgoing requests disabled")
 
 
+def dump():
+    _urls = {
+        'conn_urllib': pytest._urllib_urls,
+        'conn_requests': pytest._requests_urls,
+        'conn_socket': pytest._sockets_hostport}
+    with open(pytest._intercept_dump_file, 'w') as fd:
+        json.dump(_urls, fd)
+
+
 @pytest.fixture(autouse=True, scope="session")
 def intercept_remote_requests():
 
@@ -37,10 +46,8 @@ def intercept_remote_requests():
 
     def socket_connect_mock(self, addr):
         self.close()
-        if len(addr) == 2:
-            host, port = addr
-        else:
-            host, port, _, _ = addr
+        host = addr[0]
+        port = addr[1]
         pytest._sockets_hostport.append(addr)
         pytest.xfail(f"The test was about to connect to {host}:{port}")
 
@@ -49,23 +56,18 @@ def intercept_remote_requests():
         pytest.xfail(f"The test was about to call {req.get_full_url()}")
 
     if pytest._intercept_remote:
-        monkeypatch_session = MonkeyPatch()
-        monkeypatch_session.setattr(
+        _monkeypatch = MonkeyPatch()
+        _monkeypatch.setattr(
             "urllib.request.AbstractHTTPHandler.do_open", urlopen_mock)
-        monkeypatch_session.setattr(
+        _monkeypatch.setattr(
             "urllib3.connectionpool.HTTPConnectionPool.urlopen", requests_mock)
-        monkeypatch_session.setattr(
+        _monkeypatch.setattr(
             "socket.socket.connect", socket_connect_mock)
 
     yield None
 
     if pytest._intercept_remote:
-        _urls = {
-            'conn_urllib': pytest._urllib_urls,
-            'conn_requests': pytest._requests_urls,
-            'conn_socket': pytest._sockets_hostport}
-        with open(pytest._intercept_dump_file, 'w') as fd:
-            json.dump(_urls, fd)
-        monkeypatch_session.undo()
+        dump()
+        _monkeypatch.undo()
 
     return
