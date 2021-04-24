@@ -45,7 +45,6 @@ def pytest_configure(config):
     if not pytest._intercept_dump_file:
         pytest._intercept_dump_file = str(config.getini('intercept_dump_file'))
 
-    print(f"Dump: {pytest._intercept_dump_file}")
     if not pytest._intercept_remote and config.option.verbose:
         print("Intercept outgoing requests disabled")
 
