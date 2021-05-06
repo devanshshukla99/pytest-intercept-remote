@@ -2,6 +2,8 @@ import json
 import pytest
 from _pytest.monkeypatch import MonkeyPatch
 
+mpatch = MonkeyPatch()
+
 
 def requests_mock(self, method, url, *args, **kwargs):
     full_url = f"{self.scheme}://{self.host}{url}"
@@ -49,19 +51,23 @@ def pytest_configure(config):
         print("Intercept outgoing requests disabled")
 
 
-@pytest.fixture(scope="session", autouse=True)
-def intercept_remote():
-    if not pytest._intercept_remote:
-        yield
-    else:
-        mpatch = MonkeyPatch()
+def pytest_runtest_setup(item):
+    remote_data = item.get_closest_marker("remote_data")
+    intercept_data = pytest._intercept_remote
+
+    if remote_data and intercept_data:
+        global mpatch
         mpatch.setattr(
             "urllib.request.AbstractHTTPHandler.do_open", urlopen_mock)
         mpatch.setattr(
             "urllib3.connectionpool.HTTPConnectionPool.urlopen", requests_mock)
         mpatch.setattr(
             "socket.socket.connect", socket_connect_mock)
-        yield
+
+
+def pytest_unconfigure(config):
+    if config.getoption('--intercept-remote'):
+        global mpatch
         mpatch.undo()
         intercept_dump()
 
