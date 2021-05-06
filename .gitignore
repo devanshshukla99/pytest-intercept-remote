@@ -57,3 +57,6 @@ htmlcov
 
 pytest_intercept/_version.py
 pip-wheel-metadata/
+
+# vscode
+.vscode
