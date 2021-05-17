@@ -1,37 +1,50 @@
-import pytest
-from urllib.request import urlopen
-import requests
 import socket
+from urllib.request import urlopen
+
+import pytest
+import requests
+
+
+@pytest.fixture(scope="function")
+def skip_condition(request):
+    if not hasattr(request.config.option, "intercept_remote"):
+        pytest.skip("intercept-remote plugin not loaded")
+    if request.config.option.intercept_remote:
+        pytest.skip("rerun without --intercept-remote option")
 
 
 @pytest.mark.remote_data
+@pytest.mark.usefixtures("skip_condition")
 def test_requests_urls():
     u = requests.get("https://www.python.org")
     assert u.status_code == 200
 
 
 @pytest.mark.remote_data
+@pytest.mark.usefixtures("skip_condition")
 def test_urllib_urls():
     u = urlopen("https://www.python.org/")
     assert u.status == 200
 
 
 @pytest.mark.remote_data
+@pytest.mark.usefixtures("skip_condition")
 def test_socket():
     s = socket.socket()
     assert s.connect(("www.python.org", 80)) is None
+    s.close()
 
 
+@pytest.mark.remote_data
+@pytest.mark.usefixtures("skip_condition")
 def test_remote(testdir):
-    testdir.copy_example('pytest_intercept_remote/plugin.py')
 
-    # create a temporary pytest test file
     testdir.makepyfile(
         """
         import pytest
-        from plugin import intercept_dump
         from urllib.request import urlopen
         import requests
+        import json
         import socket
 
         @pytest.mark.remote_data
@@ -48,27 +61,29 @@ def test_remote(testdir):
         def test_socket():
             s = socket.socket()
             assert s.connect(("www.python.org", 80)) is None
+            s.close()
 
-        def test_dump():
-            intercept_dump()
-            assert open(pytest._intercept_dump_file).read() == '{"conn_urllib": [], "conn_requests": [], "conn_socket": []}'
+        @pytest.mark.remote_data
+        def test_dump(intercepted_urls):
+            assert intercepted_urls == {"urls_urllib": [], "urls_requests": [], "urls_socket": []}
         """
     )
 
-    result = testdir.runpytest("-vvv", "-s", "-raR", "--remote-data")
+    result = testdir.runpytest("-q", "-p", "no:warnings", "--remote-data=any",
+                               "-o", "intercept_dump_file=test_urls.json")
     result.assert_outcomes(passed=4)
 
 
+@pytest.mark.remote_data
+@pytest.mark.usefixtures("skip_condition")
 def test_intercept_remote(testdir):
-    testdir.copy_example('pytest_intercept_remote/plugin.py')
 
-    # create a temporary pytest test file
     testdir.makepyfile(
         """
         import pytest
-        from plugin import intercept_dump
         from urllib.request import urlopen
         import requests
+        import json
         import socket
 
         @pytest.mark.remote_data
@@ -85,12 +100,16 @@ def test_intercept_remote(testdir):
         def test_socket():
             s = socket.socket()
             assert s.connect(("www.python.org", 80)) is None
+            s.close()
 
-        def test_dump():
-            intercept_dump()
-            assert open(pytest._intercept_dump_file).read() == '{"conn_urllib": ["https://www.python.org/"], "conn_requests": ["https://www.python.org/"], "conn_socket": [["www.python.org", 80]]}'
+        @pytest.mark.remote_data
+        def test_dump(intercepted_urls):
+            assert intercepted_urls == {"urls_urllib": ["https://www.python.org/"],
+                                        "urls_requests": ["https://www.python.org/"],
+                                        "urls_socket": [("www.python.org", 80)]}
         """
     )
 
-    result = testdir.runpytest("-vvv", "-s", "-raR", "--setup-show", "--remote-data", "--intercept-remote", "--intercept-dump-file=test_urls.json")
+    result = testdir.runpytest("-q", "-p", "no:warnings", "--remote-data=any", "--intercept-remote",
+                               "-o", "intercept_dump_file=test_urls.json")
     result.assert_outcomes(xfailed=3, passed=1)
