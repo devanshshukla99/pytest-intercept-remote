@@ -2,7 +2,7 @@
 pytest-intercept-remote
 =======================
 
-|Build|
+|Build| |Coverage|
 
 
 This package provides a plugin for ``pytest`` framework to intercept outgoing connection requests and dumps them to a file.
@@ -55,7 +55,7 @@ Use ``tox`` to make sure the plugin is working:
     $ cd pytest-intercept-remote
     $ tox -e py38
 
-See `tox <https://github.com/tox-dev/tox>_` for more info.
+See `tox <https://github.com/tox-dev/tox>`_ for more info.
 
 
 Licence
@@ -63,3 +63,6 @@ Licence
 This plugin is licenced under a 3-clause BSD style licence - see the ``LICENCE`` file.
 
 .. |Build| image:: https://github.com/devanshshukla99/pytest-intercept-remote/actions/workflows/main.yml/badge.svg
+
+.. |Coverage| image:: https://codecov.io/gh/devanshshukla99/pytest-intercept-remote/branch/main/graph/badge.svg?token=81U29FC82V
+    :target: https://codecov.io/gh/devanshshukla99/pytest-intercept-remote
