@@ -7,7 +7,7 @@ This package provides a plugin for ``pytest`` framework to intercept outgoing co
 Installation
 ------------
 
-The ``pytest-intercept-remote`` plugin can be installed using ``pip``
+The ``pytest-intercept-remote`` plugin can be installed by using:
 
 .. code-block:: bash
 
@@ -20,24 +20,39 @@ The plugin will register automatically with ``pytest`` framework and will be rea
 Config
 ------
 
-The default dump file can be configured by specifing ``intercept_dump_file`` in the ini file .
-The plugin also allows ``--intercept-dump-file=[dump filepath]`` for overriding the dump filepath.
+The default dump file can be configured by specifing ``intercept_dump_file`` in the ini file or by overriding it by ``-o intercept_dump_file``.
 
 .. code-block:: bash
 
-    $ pytest --intercept-remote --intercept-dump-file=urls.json
+    $ pytest --intercept-remote -o intercept_dump_file=urls.json
 
 Usage
 -----
 
-This plugin can be used by ``--intercept-remote`` arg.
+This plugin can be used by adding ``--remote-data=any --intercept-remote`` options;
+
+NOTE: The plugin only works over functions marked with `remote_data` marker, see `remotedata <https://github.com/astropy/pytest-remotedata>`_ for more info.
 
 .. code-block:: bash
 
-    $ pytest --intercept-remote
+    $ pytest --remote-data=any --intercept-remote
 
 
 The tests trying to connect to internet will **xfail**.
+
+
+Testing
+-------
+
+Use ``tox`` to make sure the plugin is working:
+
+.. code-block:: bash
+
+    $ git clone https://github.com/devanshshukla99/pytest-intercept-remote
+    $ cd pytest-intercept-remote
+    $ tox -e py38
+
+See `tox <https://github.com/tox-dev/tox>_` for more info.
 
 
 Licence
