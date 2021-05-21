@@ -15,21 +15,39 @@ jobs:
       matrix:
         include:
           - os: ubuntu-latest
+            python-version: 3.6
+            toxenv: py36
+          - os: windows-latest
+            python-version: 3.6
+            toxenv: py36
+          - os: macos-latest
+            python-version: 3.6
+            toxenv: py36
+          - os: ubuntu-latest
             python-version: 3.7
             toxenv: py37
           - os: windows-latest
+            python-version: 3.7
+            toxenv: py37
+          - os: macos-latest
             python-version: 3.7
             toxenv: py37
           - os: ubuntu-latest
             python-version: 3.8
             toxenv: py38
           - os: windows-latest
-            python-version: 3.
+            python-version: 3.8
+            toxenv: py38
+          - os: macos-latest
+            python-version: 3.8
             toxenv: py38
           - os: ubuntu-latest
             python-version: 3.9
             toxenv: py39
           - os: windows-latest
+            python-version: 3.9
+            toxenv: py39
+          - os: macos-latest
             python-version: 3.9
             toxenv: py39
     steps:
