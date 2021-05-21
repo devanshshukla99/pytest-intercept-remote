@@ -2,7 +2,9 @@
 pytest-intercept-remote
 =======================
 
-|Build| |Coverage|
+|versions|
+
+|license| |build| |coverage| |status|
 
 
 This package provides a plugin for ``pytest`` framework to intercept outgoing connection requests and dumps them to a file.
@@ -60,7 +62,20 @@ Licence
 -------
 This plugin is licenced under a 3-clause BSD style licence - see the ``LICENCE`` file.
 
-.. |Build| image:: https://github.com/devanshshukla99/pytest-intercept-remote/actions/workflows/main.yml/badge.svg
+.. |build| image:: https://github.com/devanshshukla99/pytest-intercept-remote/actions/workflows/main.yml/badge.svg
 
-.. |Coverage| image:: https://codecov.io/gh/devanshshukla99/pytest-intercept-remote/branch/main/graph/badge.svg?token=81U29FC82V
+.. |coverage| image:: https://codecov.io/gh/devanshshukla99/pytest-intercept-remote/branch/main/graph/badge.svg?token=81U29FC82V
     :target: https://codecov.io/gh/devanshshukla99/pytest-intercept-remote
+    :alt: Code coverage
+
+.. |status| image:: https://img.shields.io/pypi/status/pytest-intercept-remote.svg
+    :target: https://pypi.org/project/pytest-intercept-remote/
+    :alt: Package stability
+
+.. |versions| image:: https://img.shields.io/pypi/pyversions/pytest-intercept-remote.svg?logo=python&logoColor=FBE072
+    :target: https://pypi.org/project/coverage/
+    :alt: Python versions supported
+
+.. |license| image:: https://img.shields.io/pypi/l/pytest-intercept-remote.svg
+    :target: https://pypi.org/project/pytest-intercept-remote/
+    :alt: License
