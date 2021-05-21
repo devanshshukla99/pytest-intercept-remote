@@ -44,7 +44,6 @@ def test_remote(testdir):
         import pytest
         from urllib.request import urlopen
         import requests
-        import json
         import socket
 
         @pytest.mark.remote_data
@@ -83,7 +82,6 @@ def test_intercept_remote(testdir):
         import pytest
         from urllib.request import urlopen
         import requests
-        import json
         import socket
 
         @pytest.mark.remote_data
