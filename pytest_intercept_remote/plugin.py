@@ -22,10 +22,9 @@ def pytest_configure(config):
     if not config.option.intercept_remote and config.option.verbose:
         print("Intercept outgoing requests: disabled")
 
-    remote_data = config.getoption("remote_data")
     intercept_remote = config.getoption('--intercept-remote')
 
-    if remote_data and intercept_remote:
+    if intercept_remote:
         global mpatch
         intercept_patch(mpatch)
 

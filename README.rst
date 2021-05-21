@@ -32,13 +32,11 @@ The default dump file can be configured by specifing ``intercept_dump_file`` in 
 Usage
 -----
 
-This plugin can be used by adding ``--remote-data=any --intercept-remote`` options;
-
-NOTE: The plugin only works over functions marked with `remote_data` marker, see `remotedata <https://github.com/astropy/pytest-remotedata>`_ for more info.
+This plugin can be used by using ``--intercept-remote`` option;
 
 .. code-block:: bash
 
-    $ pytest --remote-data=any --intercept-remote
+    $ pytest --intercept-remote
 
 
 The tests trying to connect to internet will ``xfail``.

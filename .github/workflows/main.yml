@@ -59,7 +59,7 @@ jobs:
       - name: Set up tox
         run: |
           python -m pip install --upgrade pip
-          python -m pip install pytest wheel tox
+          python -m pip install tox
       - name: Running tox
         run: |
           tox -e ${{ matrix.toxenv }}
@@ -81,7 +81,7 @@ jobs:
       - name: Set up tox
         run: |
           python -m pip install --upgrade pip
-          python -m pip install flake8 pytest wheel tox
+          python -m pip install tox
       - name: Running tox
         run: |
           tox -e ${{ matrix.toxenv }}
@@ -90,7 +90,7 @@ jobs:
           files: coverage.xml
           name: codecov
 
-  style_check:
+  codestyle:
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -104,7 +104,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install flake8 pytest pytest-remotedata tox
+          pip install tox
       - name: codestyle
         run: |
           tox -e codestyle
