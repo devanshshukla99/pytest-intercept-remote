@@ -41,7 +41,7 @@ NOTE: The plugin only works over functions marked with `remote_data` marker, see
     $ pytest --remote-data=any --intercept-remote
 
 
-The tests trying to connect to internet will **xfail**.
+The tests trying to connect to internet will ``xfail``.
 
 
 Testing
