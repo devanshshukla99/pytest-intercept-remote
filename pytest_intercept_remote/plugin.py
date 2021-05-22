@@ -1,6 +1,8 @@
 import json
-
+import os.path
+import tempfile
 import pytest
+import inspect
 
 mpatch = pytest.MonkeyPatch()
 
@@ -10,12 +12,21 @@ _urllib_urls = []
 
 
 def pytest_addoption(parser):
-    DEFAULT_DUMP_FILE = "remote_urls.json"
+    # DEFAULT_DUMP_FILE = "remote_urls.json"
 
-    parser.addoption("--intercept-remote", action="store_true", default=False,
+    parser.addoption("--intercept-remote", dest="intercept_remote", action="store_true", default=False,
                      help="Intercepts outgoing connections requests.")
+    parser.addoption("--remote-status", dest="remote_status", action="store", nargs='?',
+                     const="show", default="show", type=str, help="Show remote status (show/only/no).")
     parser.addini("intercept_dump_file", "filepath at which intercepted requests are dumped",
-                  type="string", default=DEFAULT_DUMP_FILE)
+                  type="string", default=None)
+
+
+def pytest_collection_modifyitems(items, config):
+    if config.option.remote_status == 'only':
+        config.hook.pytest_deselected(items=items)
+        items[:] = []
+        intercept_dump(config)
 
 
 def pytest_configure(config):
@@ -82,20 +93,6 @@ def intercept_patch(mpatch):
         "socket.socket.connect", socket_connect_mock)
 
 
-def intercept_dump(config):
-    """
-    Dumps intercepted requests to ini option ``intercept_dump_file``.
-    """
-    global _requests_urls, _urllib_urls, _sockets_urls
-
-    _urls = {
-        'urls_urllib': _urllib_urls,
-        'urls_requests': _requests_urls,
-        'urls_socket': _sockets_urls}
-    with open(config.getini("intercept_dump_file"), 'w') as fd:
-        json.dump(_urls, fd)
-
-
 @pytest.fixture
 def intercepted_urls():
     """
@@ -106,3 +103,73 @@ def intercepted_urls():
         'urls_requests': _requests_urls,
         'urls_socket': _sockets_urls}
     return _urls
+
+
+def intercept_dump(config):
+    """
+    Dumps intercepted requests to ini option ``intercept_dump_file``.
+    """
+    global _requests_urls, _urllib_urls, _sockets_urls
+
+    _urls = {
+        'urls_urllib': _urllib_urls,
+        'urls_requests': _requests_urls,
+        'urls_socket': _sockets_urls}
+
+    if config.getini("intercept_dump_file") and config.option.intercept_remote:
+        with open(config.getini("intercept_dump_file"), 'w') as fd:
+            json.dump(_urls, fd)
+
+    if config.option.remote_status != 'no':
+        if config.getini("intercept_dump_file"):
+            fd = open(config.getini("intercept_dump_file"))
+            _urls = json.load(fd)
+            fd.close()
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            with open(os.path.join(tmpdir, "test_remote_urls.py"), 'w') as fd:
+                fd.write(inspect.cleandoc(f"""
+                    import socket
+                    from urllib.error import HTTPError, URLError
+                    from urllib.request import urlopen
+
+                    import pytest
+                    import requests
+
+                    intercepted_urls = {_urls}
+
+                    @pytest.mark.parametrize("url", intercepted_urls.get('urls_urllib', ''))
+                    def test_urls_urllib(url):
+                        try:
+                            res = urlopen(url)
+                            assert res.status == 200
+                        except (HTTPError,URLError) as e:
+                            pytest.xfail(f"URL unreachable, status:{{e.reason}}")
+
+                    @pytest.mark.parametrize("url", intercepted_urls.get('urls_requests', ''))
+                    def test_urls_requests(url):
+                        try:
+                            res = requests.get(url)
+                            status = res.status_code
+                            if status != 200:
+                                pytest.xfail(f"URL unreachable, status:{{status}}")
+                                return
+                            assert res.status_code == 200
+                        except requests.exceptions.ConnectionError as e:
+                            pytest.xfail(f"URL unreachable")
+
+                    @pytest.mark.parametrize("url", intercepted_urls.get('urls_socket', ''))
+                    def test_urls_socket(url):
+                        sock = socket.socket(socket.AF_INET)
+                        if len(url) == 4:
+                            sock = socket.socket(socket.AF_INET6)
+                        try:
+                            assert sock.connect(tuple(url)) is None
+                        except ConnectionRefusedError:
+                            pytest.xfail("URL unreachable")
+                        finally:
+                            sock.close()
+
+                    """))
+
+            pytest.main([tmpdir, "-v", "--tb=no", "-s"])

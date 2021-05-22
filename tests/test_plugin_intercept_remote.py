@@ -95,6 +95,49 @@ def test_intercept_remote(testdir):
         """
     )
 
-    result = testdir.runpytest("-q", "-p", "no:warnings", "--intercept-remote",
+    result = testdir.runpytest("-q", "-p", "no:warnings", "--intercept-remote", "--remote-status=no",
                                "-o", "intercept_dump_file=test_urls.json")
     result.assert_outcomes(xfailed=3, passed=1)
+
+
+# def test_remote_status(testdir):
+
+#     testdir.makepyfile(
+#         """
+#         import pytest
+#         from urllib.request import urlopen
+#         import requests
+#         import socket
+#         import io
+#         from contextlib import redirect_stdout
+
+#         from pytest_intercept_remote.plugin import report_remote_status
+
+#         def test_requests_urls():
+#             u = requests.get("https://www.python.org")
+#             assert u.status_code == 200
+
+#         def test_urllib_urls():
+#             u = urlopen("https://www.python.org/")
+#             assert u.status == 200
+
+#         def test_socket():
+#             s = socket.socket()
+#             assert s.connect(("www.python.org", 80)) is None
+#             s.close()
+
+#         def test_dump(intercepted_urls):
+#             assert intercepted_urls == {"urls_urllib": ["https://www.python.org/"],
+#                                         "urls_requests": ["https://www.python.org/"],
+#                                         "urls_socket": [("www.python.org", 80)]}
+
+#         def test_report(pytestconfig):
+#             fs = io.StringIO()
+
+#             with redirect_stdout(fs):
+#                 report_remote_status(pytestconfig)
+
+#             assert "3 passed" in fs
+
+#         """
+#     )
