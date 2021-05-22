@@ -7,12 +7,18 @@ pytest-intercept-remote
 |license| |build| |coverage| |status|
 
 
-This package provides a plugin for ``pytest`` framework to intercept outgoing connection requests and dumps them to a file.
+This package provides a plugin for ``pytest`` framework for intercepting outgoing connection requests during test runs.
 
 Installation
 ------------
 
 The ``pytest-intercept-remote`` plugin can be installed by using:
+
+.. code-block:: bash
+    
+    $ pip install pytest-intercept-remote
+
+or by:
 
 .. code-block:: bash
 
@@ -22,10 +28,10 @@ The ``pytest-intercept-remote`` plugin can be installed by using:
 
 The plugin will register automatically with ``pytest`` framework and will be ready to use.
 
-Config
-------
+Configuration
+-------------
 
-The default dump file can be configured by specifing ``intercept_dump_file`` in the ini file or by overriding it by ``-o intercept_dump_file``.
+The default dump file is ``.intercepted`` which can be overrided by specifing ``intercept_dump_file`` in the ini file or by adding ``-o intercept_dump_file=[dump file]`` option.
 
 .. code-block:: bash
 
@@ -34,7 +40,7 @@ The default dump file can be configured by specifing ``intercept_dump_file`` in 
 Usage
 -----
 
-This plugin can be used by using ``--intercept-remote`` option;
+The urls can be intercepted using ``--intercept-remote`` option;
 
 .. code-block:: bash
 

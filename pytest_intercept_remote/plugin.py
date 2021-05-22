@@ -10,9 +10,9 @@ _urllib_urls = []
 
 
 def pytest_addoption(parser):
-    DEFAULT_DUMP_FILE = "remote_urls.json"
+    DEFAULT_DUMP_FILE = ".intercepted"
 
-    parser.addoption("--intercept-remote", action="store_true", default=False,
+    parser.addoption("--intercept-remote", dest="intercept_remote", action="store_true", default=False,
                      help="Intercepts outgoing connections requests.")
     parser.addini("intercept_dump_file", "filepath at which intercepted requests are dumped",
                   type="string", default=DEFAULT_DUMP_FILE)
@@ -23,7 +23,6 @@ def pytest_configure(config):
         print("Intercept outgoing requests: disabled")
 
     intercept_remote = config.getoption('--intercept-remote')
-
     if intercept_remote:
         global mpatch
         intercept_patch(mpatch)
@@ -87,7 +86,6 @@ def intercept_dump(config):
     Dumps intercepted requests to ini option ``intercept_dump_file``.
     """
     global _requests_urls, _urllib_urls, _sockets_urls
-
     _urls = {
         'urls_urllib': _urllib_urls,
         'urls_requests': _requests_urls,
@@ -101,6 +99,7 @@ def intercepted_urls():
     """
     Pytest fixture to get the list of intercepted urls in a test
     """
+    global _requests_urls, _urllib_urls, _sockets_urls
     _urls = {
         'urls_urllib': _urllib_urls,
         'urls_requests': _requests_urls,
