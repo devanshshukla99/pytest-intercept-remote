@@ -31,7 +31,10 @@ The plugin will register automatically with ``pytest`` framework and will be rea
 Configuration
 -------------
 
-The default dump file is ``.intercepted`` which can be overrided by specifing ``intercept_dump_file`` in the ini file or by adding ``-o intercept_dump_file=[dump file]`` option.
+The default dump file is ``.intercepted`` which can be overridden by:
+
+- either specifing ``intercept_dump_file`` in the ini file
+- or by adding ``-o intercept_dump_file=[dump file]`` option
 
 .. code-block:: bash
 
