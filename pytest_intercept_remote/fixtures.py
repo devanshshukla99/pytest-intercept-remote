@@ -16,9 +16,6 @@ def intercept_url(request):
 
 @pytest.fixture(scope="function")
 def intercept_skip_conditions(request):
-    if not hasattr(request.config.option, "intercept_remote"):
-        pytest.skip("pytest-intercept-remote plugin not available")
-
     if request.config.option.intercept_remote:
         pytest.skip("rerun without --intercept-remote option")
 

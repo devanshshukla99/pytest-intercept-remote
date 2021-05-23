@@ -8,6 +8,9 @@ import requests
 
 @pytest.fixture(scope="function")
 def _intercept_test_skip(request):
+    """
+    Pytest fixture for enforcing skip conditions
+    """
     if not hasattr(request.config.option, "intercept_remote"):
         pytest.skip("pytest-intercept-remote plugin not available")
     if request.config.option.intercept_remote:
@@ -35,7 +38,6 @@ def test_socket():
 
 @pytest.mark.usefixtures("_intercept_test_skip")
 def test_remote(testdir):
-
     testdir.makepyfile(
         """
         import pytest
@@ -68,7 +70,9 @@ def test_remote(testdir):
 
 @pytest.mark.usefixtures("_intercept_test_skip")
 def test_intercept_remote(testdir):
-
+    """
+    Testing intercept session.
+    """
     testdir.makepyfile(
         """
         import pytest
@@ -103,6 +107,9 @@ def test_intercept_remote(testdir):
 
 @pytest.mark.usefixtures("_intercept_test_skip")
 def test_remote_status(testdir):
+    """
+    Test for remote status.
+    """
     _dump_data = json.dumps(
         {
             "urls_urllib": [
@@ -122,3 +129,22 @@ def test_remote_status(testdir):
     result = testdir.runpytest("-q", "-p", "no:warnings", "--remote-status",
                                "-o", "intercept_dump_file=test_remote_status.txt")
     result.assert_outcomes(passed=3, xfailed=2)
+
+
+@pytest.mark.usefixtures("_intercept_test_skip")
+def test_fixtures(testdir):
+    """
+    Testing skip conditions
+    """
+    testdir.makepyfile(
+        """
+        import pytest
+        @pytest.mark.usefixtures("intercept_skip_conditions")
+        def test_skip_conditions():
+            assert True
+        """
+    )
+    result = testdir.runpytest("-q", "-p", "no:warnings")
+    result.assert_outcomes(skipped=1)
+    result = testdir.runpytest("-q", "-p", "no:warnings", "--intercept-remote")
+    result.assert_outcomes(skipped=1)
