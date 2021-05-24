@@ -43,6 +43,9 @@ The default dump file is ``.intercepted`` which can be overridden by:
 Usage
 -----
 
+Intercepting requests
+*********************
+
 The urls can be intercepted using ``--intercept-remote`` option;
 
 .. code-block:: bash
@@ -52,6 +55,18 @@ The urls can be intercepted using ``--intercept-remote`` option;
 
 The tests trying to connect to internet will ``xfail``.
 
+
+Remote status
+*************
+
+Once the requests are intercepted, they can be pinged for their status by using ``--remote-status=[show/only/no]`` option.
+``--remote-status=show`` will append the ping functions to pytest run,
+``--remote-status=only`` will only ping the requests and deselect all other tests,
+
+.. code-block:: bash
+
+    $ pytest --remote-status=show
+    $ pytest --remote-status=only
 
 Testing
 -------
