@@ -60,8 +60,10 @@ Remote status
 *************
 
 Once the requests are intercepted, they can be pinged for their status by using ``--remote-status=[show/only/no]`` option.
-``--remote-status=show`` will append the ping functions to pytest run,
-``--remote-status=only`` will only ping the requests and deselect all other tests,
+
+- ``--remote-status=show`` will append the ping functions to pytest run;
+
+- ``--remote-status=only`` will only ping the requests and deselect all other tests;
 
 .. code-block:: bash
 
