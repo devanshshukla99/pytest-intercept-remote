@@ -67,6 +67,6 @@ def test_urls_socket(intercept_url):
     try:
         assert sock.connect(tuple(intercept_url)) is None
     except ConnectionRefusedError:
-        pytest.xfail("URL unreachable")
+        pytest.xfail(f"URL unreachable, url:({intercept_url[0]},{intercept_url[1]})")
     finally:
         sock.close()
