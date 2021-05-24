@@ -146,5 +146,7 @@ def test_fixtures(testdir):
     )
     result = testdir.runpytest("-q", "-p", "no:warnings")
     result.assert_outcomes(skipped=1)
+    result = testdir.runpytest("-q", "-p", "no:warnings", "--remote-status=only")
+    result.assert_outcomes(skipped=3)
     result = testdir.runpytest("-q", "-p", "no:warnings", "--intercept-remote")
     result.assert_outcomes(skipped=1)

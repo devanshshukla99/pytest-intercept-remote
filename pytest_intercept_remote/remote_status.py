@@ -1,7 +1,7 @@
 import json
 import socket
 from os.path import isfile
-from urllib.error import HTTPError, URLError
+from urllib.error import URLError, HTTPError
 from urllib.request import urlopen
 
 import pytest
@@ -15,6 +15,9 @@ __all__ = [
 
 
 def pytest_generate_tests(metafunc):
+    """
+    Pytest hook for generating tests for all intercepted urls.
+    """
     funcarglist = [None]
 
     if hasattr(metafunc.config.option, "intercept_remote"):
@@ -24,13 +27,16 @@ def pytest_generate_tests(metafunc):
         if isfile(intercept_dump_file) and not intercept_remote:
             with open(metafunc.config.getini("intercept_dump_file")) as fd:
                 funcarglist = json.load(fd)
-            funcarglist = funcarglist.get(
-                metafunc.function.__name__.replace("test_", ''), [None]) or [None]
+        funcarglist = funcarglist.get(
+            metafunc.function.__name__.replace("test_", ''), [None]) or [None]
         metafunc.parametrize("intercept_url", funcarglist, indirect=True)
 
 
 @pytest.mark.usefixtures("intercept_skip_conditions")
 def test_urls_urllib(intercept_url):
+    """
+    Test for urls using urllib module.
+    """
     try:
         res = urlopen(intercept_url)
         assert res.status == 200
@@ -40,6 +46,9 @@ def test_urls_urllib(intercept_url):
 
 @pytest.mark.usefixtures("intercept_skip_conditions")
 def test_urls_requests(intercept_url):
+    """
+    Test for urls using requests module.
+    """
     res = requests.get(intercept_url)
     status = res.status_code
     if status != 200:
@@ -49,6 +58,9 @@ def test_urls_requests(intercept_url):
 
 @pytest.mark.usefixtures("intercept_skip_conditions")
 def test_urls_socket(intercept_url):
+    """
+    Test for urls using socket.
+    """
     sock = socket.socket(socket.AF_INET)
     if len(intercept_url) == 4:
         sock = socket.socket(socket.AF_INET6)

@@ -1,32 +1,43 @@
 import py.path
-
 import pytest
 
 from pytest_intercept_remote import remote_status
-from pytest_intercept_remote.fixtures import intercept_skip_conditions, intercept_url
-from pytest_intercept_remote.intercept_helpers import intercept_dump, intercept_patch, intercepted_urls
-
+from pytest_intercept_remote.fixtures import intercept_skip_conditions, intercept_url  # noqa: F401
+from pytest_intercept_remote.intercept_helpers import (  # noqa: F401
+    intercept_dump,
+    intercept_patch,
+    intercepted_urls
+)
 
 mpatch = pytest.MonkeyPatch()
 
 
 def pytest_addoption(parser):
+    """
+    Pytest hook for adding cmd-line options.
+    """
     DEFAULT_DUMP_FILE = ".intercepted"
 
-    parser.addoption("--intercept-remote", dest="intercept_remote", action="store_true", default=False,
-                     help="Intercepts outgoing connections requests.")
-    parser.addoption("--remote-status", dest="remote_status", action="store_true", default=False,
-                     help="Reports remote status.")
-    parser.addini("intercept_dump_file", "filepath at which intercepted requests are dumped",
-                  type="string", default=DEFAULT_DUMP_FILE)
+    parser.addoption(
+        "--intercept-remote", dest="intercept_remote", action="store_true", default=False,
+        help="Intercepts outgoing connections requests.")
+    parser.addoption(
+        "--remote-status", dest="remote_status", action="store", nargs="?", const="show", default="no",
+        help="Reports the status of intercepted urls (show/only/no).")
+    parser.addini(
+        "intercept_dump_file", "filepath at which intercepted requests are dumped",
+        type="string", default=DEFAULT_DUMP_FILE)
 
 
 def pytest_configure(config):
+    """
+    Pytest hook for setting up monkeypatch, if ``--intercept-remote`` is ``True``
+    """
     if not config.option.intercept_remote and config.option.verbose:
-        print("Intercept outgoing requests: False")
+        print(f"Intercept outgoing requests: {config.option.intercept_remote}")
 
-    if config.option.remote_status:
-        print("Report remote status: True")
+    if config.option.remote_status != "no":
+        print(f"Report remote status: {config.option.remote_status}")
 
     if config.option.intercept_remote:
         global mpatch
@@ -35,7 +46,7 @@ def pytest_configure(config):
 
 def pytest_unconfigure(config):
     """
-    Dump requests and clean
+    Pytest hook for cleaning up.
     """
     if config.option.intercept_remote:
         global mpatch
@@ -44,25 +55,29 @@ def pytest_unconfigure(config):
 
 
 def pytest_collection_modifyitems(session, items, config):
-    if config.option.remote_status:
-        items[:] = []
+    """
+    Pytest hook for adding remote status tests from ``remote_status``
+    """
+    if config.option.remote_status != "no":
+        if config.option.remote_status == "only":
+            # deselect all other tests if ``--remote-status=only``
+            items[:] = []
         report_module = config.hook.pytest_pycollect_makemodule(
             path=py.path.local(remote_status.__file__),
             parent=session)
+        _remote_test_functions = [
+            remote_status.test_urls_urllib,
+            remote_status.test_urls_requests,
+            remote_status.test_urls_socket
+        ]
 
-        items.extend(
-            config.hook.pytest_pycollect_makeitem(
-                collector=report_module,
-                name="test_urls_urllib",
-                obj=remote_status.test_urls_urllib))
-        items.extend(
-            config.hook.pytest_pycollect_makeitem(
-                collector=report_module,
-                name="test_urls_requests",
-                obj=remote_status.test_urls_requests))
-        items.extend(
-            config.hook.pytest_pycollect_makeitem(
-                collector=report_module,
-                name="test_urls_socket",
-                obj=remote_status.test_urls_socket))
+        remote_tests = []
+        for testfunc in _remote_test_functions:
+            remote_tests.extend(
+                config.hook.pytest_pycollect_makeitem(
+                    collector=report_module,
+                    name=testfunc.__name__,
+                    obj=testfunc))
+
+        items.extend(remote_tests)
     return
