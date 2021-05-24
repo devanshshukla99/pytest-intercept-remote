@@ -2,9 +2,9 @@
 pytest-intercept-remote
 =======================
 
-|versions|
+|versions| |license|
 
-|license| |build| |coverage| |status| |pypiversion|
+|build| |coverage| |status| |pypiversion|
 
 
 This package provides a plugin for ``pytest`` framework for intercepting outgoing connection requests during test runs.
