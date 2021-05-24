@@ -4,7 +4,7 @@ pytest-intercept-remote
 
 |versions|
 
-|license| |build| |coverage| |status|
+|license| |build| |coverage| |status| |pypiversion|
 
 
 This package provides a plugin for ``pytest`` framework for intercepting outgoing connection requests during test runs.
@@ -97,6 +97,10 @@ This plugin is licenced under a 3-clause BSD style licence - see the ``LICENCE``
 .. |status| image:: https://img.shields.io/pypi/status/pytest-intercept-remote.svg
     :target: https://pypi.org/project/pytest-intercept-remote/
     :alt: Package stability
+
+.. |pypiversion| image:: https://img.shields.io/pypi/v/pytest-intercept-remote.svg
+    :target: https://pypi.org/project/pytest-intercept-remote/
+    :alt: PyPi version
 
 .. |versions| image:: https://img.shields.io/pypi/pyversions/pytest-intercept-remote.svg?logo=python&logoColor=FBE072
     :target: https://pypi.org/project/coverage/
