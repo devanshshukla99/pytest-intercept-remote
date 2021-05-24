@@ -1,36 +1,52 @@
-import json
-
+import py.path
 import pytest
+
+from pytest_intercept_remote import remote_status
+from pytest_intercept_remote.fixtures import intercept_skip_conditions, intercept_url  # noqa: F401
+from pytest_intercept_remote.intercept_helpers import (  # noqa: F401
+    intercept_dump,
+    intercept_patch,
+    intercepted_urls
+)
 
 mpatch = pytest.MonkeyPatch()
 
-_requests_urls = []
-_sockets_urls = []
-_urllib_urls = []
-
 
 def pytest_addoption(parser):
+    """
+    Pytest hook for adding cmd-line options.
+    """
     DEFAULT_DUMP_FILE = ".intercepted"
 
-    parser.addoption("--intercept-remote", dest="intercept_remote", action="store_true", default=False,
-                     help="Intercepts outgoing connections requests.")
-    parser.addini("intercept_dump_file", "filepath at which intercepted requests are dumped",
-                  type="string", default=DEFAULT_DUMP_FILE)
+    parser.addoption(
+        "--intercept-remote", dest="intercept_remote", action="store_true", default=False,
+        help="Intercepts outgoing connections requests.")
+    parser.addoption(
+        "--remote-status", dest="remote_status", action="store", nargs="?", const="show", default="no",
+        help="Reports the status of intercepted urls (show/only/no).")
+    parser.addini(
+        "intercept_dump_file", "filepath at which intercepted requests are dumped",
+        type="string", default=DEFAULT_DUMP_FILE)
 
 
 def pytest_configure(config):
+    """
+    Pytest hook for setting up monkeypatch, if ``--intercept-remote`` is ``True``
+    """
     if not config.option.intercept_remote and config.option.verbose:
-        print("Intercept outgoing requests: disabled")
+        print(f"Intercept outgoing requests: {config.option.intercept_remote}")
 
-    intercept_remote = config.getoption('--intercept-remote')
-    if intercept_remote:
+    if config.option.remote_status != "no":
+        print(f"Report remote status: {config.option.remote_status}")
+
+    if config.option.intercept_remote:
         global mpatch
         intercept_patch(mpatch)
 
 
 def pytest_unconfigure(config):
     """
-    Dump requests and clean
+    Pytest hook for cleaning up.
     """
     if config.option.intercept_remote:
         global mpatch
@@ -38,70 +54,30 @@ def pytest_unconfigure(config):
         intercept_dump(config)
 
 
-def urlopen_mock(self, http_class, req, **http_conn_args):
+def pytest_collection_modifyitems(session, items, config):
     """
-    Mock function for urllib.request.urlopen.
+    Pytest hook for adding remote status tests from ``remote_status``
     """
-    global _urllib_urls
-    _urllib_urls.append(req.get_full_url())
-    pytest.xfail(f"The test was about to call {req.get_full_url()}")
+    if config.option.remote_status != "no":
+        if config.option.remote_status == "only":
+            # deselect all other tests if ``--remote-status=only``
+            items[:] = []
+        report_module = config.hook.pytest_pycollect_makemodule(
+            path=py.path.local(remote_status.__file__),
+            parent=session)
+        _remote_test_functions = [
+            remote_status.test_urls_urllib,
+            remote_status.test_urls_requests,
+            remote_status.test_urls_socket
+        ]
 
+        remote_tests = []
+        for testfunc in _remote_test_functions:
+            remote_tests.extend(
+                config.hook.pytest_pycollect_makeitem(
+                    collector=report_module,
+                    name=testfunc.__name__,
+                    obj=testfunc))
 
-def requests_mock(self, method, url, *args, **kwargs):
-    """
-    Mock function for urllib3 module.
-    """
-    global _requests_urls
-    full_url = f"{self.scheme}://{self.host}{url}"
-    _requests_urls.append(full_url)
-    pytest.xfail(f"The test was about to {method} {full_url}")
-
-
-def socket_connect_mock(self, addr):
-    """
-    Mock function for socket.socket.
-    """
-    global _sockets_urls
-    self.close()
-    host = addr[0]
-    port = addr[1]
-    _sockets_urls.append(addr)
-    pytest.xfail(f"The test was about to connect to {host}:{port}")
-
-
-def intercept_patch(mpatch):
-    """
-    Monkey Patches urllib, urllib3 and socket.
-    """
-    mpatch.setattr(
-        "urllib.request.AbstractHTTPHandler.do_open", urlopen_mock)
-    mpatch.setattr(
-        "urllib3.connectionpool.HTTPConnectionPool.urlopen", requests_mock)
-    mpatch.setattr(
-        "socket.socket.connect", socket_connect_mock)
-
-
-def intercept_dump(config):
-    """
-    Dumps intercepted requests to ini option ``intercept_dump_file``.
-    """
-    global _requests_urls, _urllib_urls, _sockets_urls
-    _urls = {
-        'urls_urllib': _urllib_urls,
-        'urls_requests': _requests_urls,
-        'urls_socket': _sockets_urls}
-    with open(config.getini("intercept_dump_file"), 'w') as fd:
-        json.dump(_urls, fd)
-
-
-@pytest.fixture
-def intercepted_urls():
-    """
-    Pytest fixture to get the list of intercepted urls in a test
-    """
-    global _requests_urls, _urllib_urls, _sockets_urls
-    _urls = {
-        'urls_urllib': _urllib_urls,
-        'urls_requests': _requests_urls,
-        'urls_socket': _sockets_urls}
-    return _urls
+        items.extend(remote_tests)
+    return
