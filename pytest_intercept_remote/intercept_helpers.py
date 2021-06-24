@@ -8,14 +8,10 @@ __all__ = [
     "socket_connect_mock",
     "intercept_patch",
     "intercepted_urls",
-    "intercept_dump"
+    "intercept_dump",
 ]
 
-_urls = {
-    "urls_urllib": [],
-    "urls_requests": [],
-    "urls_socket": []
-}
+_urls = {"urls_urllib": [], "urls_requests": [], "urls_socket": []}
 
 
 def urlopen_mock(self, http_class, req, **http_conn_args):
@@ -53,12 +49,9 @@ def intercept_patch(mpatch):
     """
     Monkey Patches urllib, urllib3 and socket.
     """
-    mpatch.setattr(
-        "urllib.request.AbstractHTTPHandler.do_open", urlopen_mock)
-    mpatch.setattr(
-        "urllib3.connectionpool.HTTPConnectionPool.urlopen", requests_mock)
-    mpatch.setattr(
-        "socket.socket.connect", socket_connect_mock)
+    mpatch.setattr("urllib.request.AbstractHTTPHandler.do_open", urlopen_mock)
+    mpatch.setattr("urllib3.connectionpool.HTTPConnectionPool.urlopen", requests_mock)
+    mpatch.setattr("socket.socket.connect", socket_connect_mock)
 
 
 @pytest.fixture
@@ -75,5 +68,5 @@ def intercept_dump(config):
     Dumps intercepted requests to ini option ``intercept_dump_file``.
     """
     global _urls
-    with open(config.getini("intercept_dump_file"), 'w') as fd:
+    with open(config.getini("intercept_dump_file"), "w") as fd:
         json.dump(_urls, fd)
