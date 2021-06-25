@@ -103,7 +103,7 @@ This plugin is licenced under a 3-clause BSD style licence - see the ``LICENCE``
     :alt: PyPi version
 
 .. |versions| image:: https://img.shields.io/pypi/pyversions/pytest-intercept-remote.svg?logo=python&logoColor=FBE072
-    :target: https://pypi.org/project/coverage/
+    :target: https://pypi.org/project/pytest-intercept-remote/
     :alt: Python versions supported
 
 .. |license| image:: https://img.shields.io/pypi/l/pytest-intercept-remote.svg
